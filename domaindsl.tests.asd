@@ -5,4 +5,4 @@
                #:domaindsl.artifact
                #:domaindsl.swift
                #:domaindsl.kotlin)
-  :components ((:file "t/tests")))
+  :components ((:file "tests")))
