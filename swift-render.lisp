@@ -4,7 +4,10 @@
    #:swift-render
    #:render-type
    #:render-class
-   #:render))
+   #:render
+   #:to-class-name
+   #:to-enum-tag
+   #:to-ctor-variable-name))
 
 (in-package #:domaindsl.swift)
 

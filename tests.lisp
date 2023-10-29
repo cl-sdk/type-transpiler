@@ -62,12 +62,12 @@
 (def-test lisp-symbol->swift-class-name ()
   (5am:is (equal
            "Test"
-           (domaindsl.swift:to-swift-class-name 'test))))
+           (domaindsl.swift:to-class-name 'test))))
 
 (def-test lisp-symbol->swift-enum-tag ()
   (5am:is (equal
            "test"
-           (domaindsl.swift:to-swift-enum-tag 'test))))
+           (domaindsl.swift:to-enum-tag 'test))))
 
 (def-test generate-artifact-for-datatypes ()
   (let* ((ty (domaindsl.types:make-dt-type :name 'test
