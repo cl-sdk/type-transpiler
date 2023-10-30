@@ -5,4 +5,7 @@
                #:domaindsl.artifact
                #:domaindsl.swift
                #:domaindsl.kotlin)
-  :components ((:file "tests")))
+  :components ((:file "tests")
+               (:file "types-tests")
+               (:file "swift-tests")
+               (:file "kotlin-tests")))
