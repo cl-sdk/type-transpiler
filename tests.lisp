@@ -13,44 +13,46 @@
 
 (in-suite domaindsl.types-suite)
 
+(defclass class-for-argument () ())
+
 (progn
   (domaindsl.types:datatype
       single
     ((single)))
   (def-test declare-a-type-with-a-single-constructor ()
-    (let* ((ty (first (domaindsl.types:all-types)))
-           (ctor (first (domaindsl.types:dt-type-ctors ty))))
+    (let* ((ty (gethash 'single (domaindsl.types:all-types)))
+           (ctor (first (domaindsl.types:object-constructors ty))))
       (5am:is (equal
                'single
-               (domaindsl.types:dt-type-name ty)))
+               (domaindsl.types:object-name ty)))
       (5am:is (equal
                'single
-               (domaindsl.types:dt-ctor-name ctor))))
+               (domaindsl.types:object-name ctor))))
     (domaindsl.types:clean-all-types)))
 
 (progn
   (domaindsl.types:datatype
       single
-    ((single (class class-for-argument))))
+    ((single (:class class-for-argument))))
   (def-test declare-a-type-with-a-single-constructor-with-arguments ()
-    (let* ((ty (first (domaindsl.types:all-types)))
-           (ctor (first (domaindsl.types:dt-type-ctors ty)))
-           (arg (first (domaindsl.types:dt-ctor-args ctor))))
+    (let* ((ty (gethash 'single (domaindsl.types:all-types)))
+           (ctor (first (domaindsl.types:object-constructors ty)))
+           (arg (first (domaindsl.types:object-arguments ctor))))
       (5am:is (equal
                'single
-               (domaindsl.types:dt-type-name ty)))
+               (domaindsl.types:object-name)))
       (5am:is (equal
                'single
-               (domaindsl.types:dt-ctor-name ctor)))
+               (domaindsl.types:object-name ctor)))
       (5am:is (equal
                'class-for-argument
-               (domaindsl.types:ctor-arg-name arg)))
+               (domaindsl.types:object-name arg)))
       (5am:is (equal
                'class
-               (domaindsl.types:ctor-arg-kind arg)))
+               (domaindsl.types:object-kind arg)))
       (5am:is (equal
                (find-class 'class-for-argument)
-               (domaindsl.types:ctor-arg-reference arg))))
+               (domaindsl.types:object-reference arg))))
     (domaindsl.types:clean-all-types)))
 
 ;; -------
@@ -59,27 +61,29 @@
 
 (in-suite domaindsl.swift-suite)
 
+(defclass class-for-argument () ())
+
 (def-test lisp-symbol->swift-class-name ()
   (5am:is (equal
            "Test"
-           (domaindsl.swift:to-class-name 'test))))
+           (domaindsl.types:object-to-class-name-string :swift 'test))))
 
 (def-test lisp-symbol->swift-enum-tag ()
   (5am:is (equal
            "test"
-           (domaindsl.swift:to-enum-tag 'test))))
+           (domaindsl.types:object-to-constructor-name-string :swift 'test))))
 
 (def-test generate-artifact-for-datatypes ()
-  (let* ((ty (domaindsl.types:make-dt-type :name 'test
-                                          :ctors nil))
+  (let* ((ty (domaindsl.types:make-data-type :name 'test
+                                             :ctors nil))
          (arts (domaindsl.artifact:generate-artifact :swift ty))
          (art (car arts)))
     (5am:is (= 1 (length arts)))
     (5am:is (equal
-             "Test"
+             'test
              (domaindsl.artifact:artifact-name art)))
     (5am:is (equal
-             "Test.swift"
+             "Test"
              (domaindsl.artifact:artifact-file art)))
     (5am:is (equal
              ty
@@ -91,14 +95,16 @@
 
 (in-suite domaindsl.kotlin-suite)
 
+(defclass class-for-argument () ())
+
 (def-test generate-artifact-for-datatypes ()
-  (let* ((ty (domaindsl.types:make-dt-type :name 'test
-                                          :ctors nil))
+  (let* ((ty (domaindsl.types:make-data-type :name 'test
+                                             :ctors nil))
          (arts (domaindsl.artifact:generate-artifact :kotlin ty))
          (art (car arts)))
     (5am:is (= 1 (length arts)))
     (5am:is (equal
-             "Test"
+             'test
              (domaindsl.artifact:artifact-name art)))
     (5am:is (equal
              "Test.kt"

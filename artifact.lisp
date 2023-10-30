@@ -7,7 +7,8 @@
    #:artifact-name
    #:artifact-file
    #:artifact-content
-   #:compile-artifact))
+   #:compile-artifact
+   #:artifact-extension))
 
 (in-package #:domaindsl.artifact)
 
@@ -15,6 +16,8 @@
   name
   file
   content)
+
+(defgeneric artifact-extension (target))
 
 (defgeneric generate-artifact (target object))
 
