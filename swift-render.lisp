@@ -1,6 +1,7 @@
 (defpackage #:domaindsl.swift
   (:use #:cl)
   (:import-from #:domaindsl.types
+                #:object-to-class-name-string
                 #:object-to-constructor-variable-name-string)
   (:export
    #:swift-render
@@ -12,7 +13,6 @@
    #:to-ctor-variable-name))
 
 (in-package #:domaindsl.swift)
-
 
 ;; struct ClassName {
 ;;   public val FieldName;
@@ -26,6 +26,15 @@
 ;;   case ConstructorName(ConstructorArgument,...)
 ;; }
 
+(defmethod domaindsl.types:object-to-class-name-string
+    ((target (eql :swift))
+     (obj domaindsl.types:data-type))
+  (str:pascal-case (symbol-name (domaindsl.types:object-name obj))))
+
+(defmethod domaindsl.types:object-to-class-name-string
+    ((target (eql :swift))
+     (obj domaindsl.types:type-constructor))
+  (str:camel-case (symbol-name (domaindsl.types:object-name obj))))
 
 (defmethod domaindsl.types:object-to-class-name-string
     ((target (eql :swift))
@@ -65,12 +74,13 @@
 (defun render-type (ty ctors)
   (str:concat
       "enum "
-      (to-class-name (domaindsl.types:object-name ty)) " {" ctors "}"))
+      (object-to-class-name-string :swift (domaindsl.types:object-name ty))
+      " {" ctors "}"))
 
 (defun render-class (ty)
   (str:concat
    "class "
-   (to-class-name (domaindsl.types:object-name ty))
+   (object-to-class-name-string :swift (domaindsl.types:object-name ty))
    " {}"))
 
 (defun render (ty)
@@ -93,14 +103,12 @@
 
 (defmethod domaindsl.artifact:generate-artifact
     ((target (eql :swift)) (o domaindsl.types:data-type))
-  (let ((class-name (to-class-name
-                     (domaindsl.types:object-name o))))
+  (let ((class-name (object-to-class-name-string target o)))
     (list (file-for-artifact class-name o))))
 
 (defmethod domaindsl.artifact:generate-artifact
     ((target (eql :swift)) (o domaindsl.types:class-reference))
-  (let ((class-name (to-class-name
-                     (domaindsl.types:object-name o))))
+  (let ((class-name (object-to-class-name-string target o)))
     (list (file-for-artifact class-name o))))
 
 (defmethod domaindsl.artifact:compile-artifact

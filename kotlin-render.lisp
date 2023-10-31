@@ -28,6 +28,16 @@
 
 (defmethod domaindsl.types:object-to-class-name-string
     ((target (eql :kotlin))
+     (obj domaindsl.types:data-type))
+  (str:pascal-case (symbol-name (domaindsl.types:object-name obj))))
+
+(defmethod domaindsl.types:object-to-class-name-string
+    ((target (eql :kotlin))
+     (obj domaindsl.types:type-constructor))
+  (str:pascal-case (symbol-name (domaindsl.types:object-name obj))))
+
+(defmethod domaindsl.types:object-to-class-name-string
+    ((target (eql :kotlin))
      (obj domaindsl.types:constructor-argument))
   (let* ((type-symbol (domaindsl.types:object-argument-type obj))
          (name (str:pascal-case (symbol-name type-symbol)))
@@ -110,22 +120,26 @@
   ".kt")
 
 (defmethod domaindsl.artifact:generate-artifact
-    ((target (eql :kotlin)) (o domaindsl.types:data-type))
+    ((target (eql :kotlin))
+     (o domaindsl.types:data-type))
   (flet ((artifact (name obj)
-           (domaindsl.artifact:make-artifact :name name
-                                             :file (to-file-name (to-class-name name))
-                                             :content obj)))
-    (cons (artifact (domaindsl.types:object-name) o)
+           (domaindsl.artifact:make-artifact
+            :name name
+            :file (str:concat
+                   (object-to-class-name-string target obj)
+                   (domaindsl.artifact:artifact-extension target))
+            :content obj)))
+    (cons (artifact (domaindsl.types:object-name o) o)
           (mapcar (lambda (c)
                     (artifact (domaindsl.types:object-name c) c))
                   (domaindsl.types:object-constructors o)))))
 
 (defmethod domaindsl.artifact:generate-artifact
-    ((target (eql :kotlin)) (o domaindsl.types:class-reference))
+    ((target (eql :kotlin))
+     (o domaindsl.types:class-reference))
   (list (domaindsl.artifact:make-artifact
          :name (domaindsl.types:object-name o)
-         :file (to-file-name (object-to-class-name-string target
-                                                          (domaindsl.types:object-name o)))
+         :file (to-file-name (object-to-class-name-string target o))
          :content o)))
 
 (defmethod domaindsl.artifact:compile-artifact

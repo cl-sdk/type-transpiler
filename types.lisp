@@ -17,7 +17,6 @@
    #:object-arguments
    #:object-of-class
    #:object-type
-   #:object-kind
    #:object-array
    #:object-to-class-name-string
    #:object-to-constructor-name-string
@@ -28,7 +27,8 @@
    #:make-data-type
    #:make-class-reference
    #:make-type-constructor
-   #:make-constructor-argument))
+   #:make-constructor-argument
+   #:object-argument-kind))
 
 (in-package #:domaindsl.types)
 

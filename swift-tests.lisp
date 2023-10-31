@@ -4,15 +4,28 @@
 
 (in-suite domaindsl.swift-suite)
 
-(def-test lisp-symbol->swift-class-name ()
-  (5am:is (equal
-           "Test"
-           (domaindsl.types:object-to-class-name-string :swift 'test))))
+(def-test data-type->swift-class-name ()
+  (let ((ty (domaindsl.types:make-data-type :name 'test
+                                            :ctors nil)))
+    (5am:is (equal
+             "Test"
+             (domaindsl.types:object-to-class-name-string :swift ty)))))
 
-(def-test lisp-symbol->swift-enum-tag ()
-  (5am:is (equal
-           "test"
-           (domaindsl.types:object-to-constructor-name-string :swift 'test))))
+(def-test type-constructor->swift-class-name ()
+  (let ((ty (domaindsl.types:make-type-constructor :name 'test-test
+                                                   :args nil
+                                                   :of-class nil)))
+    (5am:is (equal
+             "testTest"
+             (domaindsl.types:object-to-class-name-string :swift ty)))))
+
+(def-test constructor-argument->swift-class-name ()
+  (let ((ty (domaindsl.types:make-constructor-argument
+             :name 'test :type 'test :kind nil
+             :reference nil :array nil)))
+    (5am:is (equal
+             "Test"
+             (domaindsl.types:object-to-class-name-string :swift ty)))))
 
 (def-test generate-artifact-for-datatypes ()
   (let* ((ty (domaindsl.types:make-data-type :name 'test
@@ -21,7 +34,7 @@
          (art (car arts)))
     (5am:is (= 1 (length arts)))
     (5am:is (equal
-             'test
+             "Test"
              (domaindsl.artifact:artifact-name art)))
     (5am:is (equal
              "Test"
