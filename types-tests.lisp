@@ -4,22 +4,11 @@
 
 (in-suite domaindsl.types-suite)
 
-(def-test data-type-to-swift-class-name ()
-  (let ((ty (domaindsl.types:make-data-type :name 'test :ctors nil)))
-    (5am:is (string-equal
-             "Test"
-             (domaindsl.types:object-to-class-name-string :swift ty)))))
-
-  (domaindsl.types:datatype
-      single
-    ((single)))
-
-(domaindsl.types:datatype
-    single-2
-  ((single (:class class-for-argument))))
-
 (def-test declare-a-type-with-a-single-constructor-no-arguments ()
-  (let* ((ty (gethash 'single (domaindsl.types:all-types)))
+  (let* ((ctors (list (domaindsl.types:make-type-constructor :name 'single
+                                                             :args nil
+                                                             :of-class 'single)))
+         (ty (domaindsl.types:make-data-type :name 'single :ctors ctors))
          (ctor (first (domaindsl.types:object-constructors ty))))
     (5am:is (equal
              'single
@@ -29,21 +18,29 @@
              (domaindsl.types:object-name ctor)))))
 
 (def-test declare-a-type-with-a-single-constructor-with-arguments ()
-  (let* ((ty (gethash 'single-2 (domaindsl.types:all-types)))
-         (ctor (first (domaindsl.types:object-constructors ty)))
-         (arg (first (domaindsl.types:object-arguments ctor))))
+  (let* ((ctor-arg (domaindsl.types:make-constructor-argument :name 'class-for-argument
+                                                              :type 'class-for-argument
+                                                              :kind :class
+                                                              :reference (find-class 'class-for-argument)
+                                                              :array nil))
+         (ctor-args (list ctor-arg))
+         (ctors (list (domaindsl.types:make-type-constructor :name 'single
+                                                             :args ctor-args
+                                                             :of-class 'test)))
+         (ty (domaindsl.types:make-data-type :name 'single :ctors ctors))
+         (ctor (first (domaindsl.types:object-constructors ty))))
     (5am:is (equal
-             'single-2
+             'single
              (domaindsl.types:object-name ty)))
     (5am:is (equal
              'single
              (domaindsl.types:object-name ctor)))
     (5am:is (equal
              'class-for-argument
-             (domaindsl.types:object-name arg)))
+             (domaindsl.types:object-name ctor-arg)))
     (5am:is (equal
              :class
-             (domaindsl.types:object-argument-kind arg)))
+             (domaindsl.types:object-argument-kind ctor-arg)))
     (5am:is (equal
              (find-class 'class-for-argument)
-             (domaindsl.types:object-reference arg)))))
+             (domaindsl.types:object-reference ctor-arg)))))
