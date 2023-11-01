@@ -1,12 +1,12 @@
 ENV?=development
 
 ## run through roswell
-LISP?=ros run --
+LISPC?=sbcl
 
 LISPFLAGS=--quit --non-interactive
 
 .PHONY: tests
 tests:
 	ENV=$(ENV) \
-	$(LISP) \
+	$(LISPC) \
 	$(LISPFLAGS) --load tests-runner.lisp

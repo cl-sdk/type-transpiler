@@ -59,4 +59,4 @@ jobs:
       - name: run
         run: |
           ros use sbcl
-          make tests
+          LISPC="ros run --" make tests
