@@ -1,3 +1,3 @@
 (asdf:defsystem #:domaindsl.types
   :depends-on (#:str)
-  :components ((:file "types")))
+  :components ((:file "src/types")))

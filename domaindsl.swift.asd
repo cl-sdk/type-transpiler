@@ -2,4 +2,4 @@
   :depends-on (#:str
                #:domaindsl.types
                #:domaindsl.artifact)
-  :components ((:file "swift-render")))
+  :components ((:file "src/swift-render")))

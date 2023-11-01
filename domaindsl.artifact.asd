@@ -1,4 +1,4 @@
 (asdf:defsystem #:domaindsl.artifact
   :depends-on (#:str
                #:domaindsl.types)
-  :components ((:file "artifact")))
+  :components ((:file "src/artifact")))

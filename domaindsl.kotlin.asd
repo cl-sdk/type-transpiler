@@ -2,4 +2,4 @@
   :depends-on (#:str
                #:domaindsl.types
                #:domaindsl.artifact)
-  :components ((:file "kotlin-render")))
+  :components ((:file "src/kotlin-render")))
