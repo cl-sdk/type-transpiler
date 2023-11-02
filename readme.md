@@ -18,7 +18,7 @@ of if I want to do some copy and paste.
 
 Maybe, one day, we can manipulate the AST of each language directly.
 
-![image](https://github.com/diasbruno/domaindsl/blob/development/extras/stateism.png?raw=true)
+![image](https://github.com/domaindsl/domaindsl/blob/development/extras/stateism.png?raw=true)
 
 ## Usage
 
