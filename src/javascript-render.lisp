@@ -25,12 +25,12 @@
 (defmethod domaindsl.types:object-to-constructor-name-string
     ((target (eql :javascript))
      (obj domaindsl.types:constructor-argument))
-  (str:camel-case (symbol-name (domaindsl.types:object-argument-type obj))))
+  (str:camel-case (symbol-name (domaindsl.types:object-name obj))))
 
 (defmethod domaindsl.types:object-to-constructor-variable-name-string
     ((target (eql :javascript))
      (obj domaindsl.types:constructor-argument))
-  (str:camel-case (symbol-name (domaindsl.types:object-argument-type obj))))
+  (str:camel-case (symbol-name (domaindsl.types:object-name obj))))
 
 (defun render-function-arguments (target ty)
   (etypecase ty
