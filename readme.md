@@ -10,4 +10,37 @@ but, instead, use the common objects that gives approximately the same meaning
 NOTE: Still need a little bit of refactoring and a better design,
 but it's good enough for now.
 
-See the POC branch for to see the project.
+## Usage
+
+Declaring a data type:
+
+```lisp
+(defclass another-class () ())
+
+(datatype my-type
+  ((constructor-of-my-type-a)
+   (constructor-of-my-type-b (:class another-class (:name dependency)))))
+```
+
+This example will generate the approximate in swift:
+
+```swift
+class AnotherClass {}
+
+enum MyType {
+  case constructorOfMyTypeA
+  case constructorOfMyTypeB(AnotherClass)
+}
+```
+
+And the approximately in kotlin:
+
+```kotlin
+class AnotherClass {}
+
+open class MyType
+
+class ConstructorOfMyTypeA: MyType()
+
+data class ConstructorOfMyTypeB(val dependency: AnotherClass): MyType()
+```
