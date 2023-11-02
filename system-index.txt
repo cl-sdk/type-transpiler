@@ -1,5 +1,0 @@
-domaindsl.swift.asd
-domaindsl.tests.asd
-domaindsl.types.asd
-domaindsl.kotlin.asd
-domaindsl.artifact.asd
