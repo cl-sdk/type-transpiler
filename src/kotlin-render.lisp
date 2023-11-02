@@ -26,23 +26,26 @@
 
 ;;; ------
 
+(defun symbol-to-pascal-case (s)
+  (str:pascal-case (symbol-name s)))
+
 (defmethod domaindsl.types:object-to-class-name-string
     ((target (eql :kotlin))
      (obj domaindsl.types:data-type))
-  (str:pascal-case (symbol-name (domaindsl.types:object-name obj))))
+  (symbol-to-pascal-case (domaindsl.types:object-name obj)))
 
 (defmethod domaindsl.types:object-to-class-name-string
     ((target (eql :kotlin))
      (obj domaindsl.types:type-constructor))
-  (str:pascal-case (symbol-name (domaindsl.types:object-name obj))))
+  (symbol-to-pascal-case (domaindsl.types:object-name obj)))
 
 (defmethod domaindsl.types:object-to-class-name-string
     ((target (eql :kotlin))
      (obj domaindsl.types:constructor-argument))
   (let* ((type-symbol (domaindsl.types:object-argument-type obj))
-         (name (str:pascal-case (symbol-name type-symbol)))
+         (name (symbol-to-pascal-case type-symbol))
          (is-array (domaindsl.types:object-argument-is-array obj)))
-    (if as-array (str:concat "Array<" name ">") name)))
+    (if is-array (str:concat "Array<" name ">") name)))
 
 (defmethod domaindsl.types:object-to-constructor-name-string
     ((target (eql :kotlin))
@@ -56,25 +59,28 @@
 
 (defun render-constructor-argument (arg)
   (str:concat "val "
-              (object-to-constructor-variable-name-string arg)
+              (object-to-constructor-variable-name-string :kotlin arg)
               ": "
-              (object-to-class-name-string arg)))
+              (object-to-class-name-string :kotlin arg)))
 
 (defun render-constructor-arguments (ct)
   (let ((constructor-arguments (domaindsl.types:object-arguments ct)))
     (if (null constructor-arguments)
         ""
-        (destructuring-bind (first . rest)
-            constructor-arguments
-          (reduce (lambda (acc x)
-                    (str:concat acc ", " (render-constructor-argument x)))
-                  rest
-                  :initial-value (render-constructor-argument first))))))
+        (str:concat
+         "("
+         (destructuring-bind (first . rest)
+             constructor-arguments
+           (reduce (lambda (acc x)
+                     (str:concat acc ", " (render-constructor-argument x)))
+                   rest
+                   :initial-value (render-constructor-argument first)))
+         ")"))))
 
 (defun render-base-class (ty)
   (str:concat
    "open class "
-   (object-to-class-name-string ty)))
+   (object-to-class-name-string :kotlin ty)))
 
 (defun render-data-class (ty ct)
   (let* ((args (domaindsl.types:object-arguments ct))
@@ -83,9 +89,7 @@
     (str:concat
      class-tag
      (object-to-class-name-string ty)
-     "("
      (render-constructor-arguments ct)
-     ")"
      ": "
      (object-to-class-name-string ty)
      "()")))
@@ -95,7 +99,7 @@
 
 (defun render-class (ty)
   (str:concat "class "
-              (to-class-name (domaindsl.types:object-name ty))
+              (object-to-class-name-string :kotlin ty)
               "{}"))
 
 (defun render-constructor (c)
@@ -104,10 +108,10 @@
          (class-tag (if has-args "data class " "class ")))
     (str:concat
      class-tag
-     (to-class-name (domaindsl.types:object-name c))
-     (kotlin-render-ctor-args c)
+     (object-to-class-name-string :kotlin c)
+     (render-constructor-arguments c)
      ": "
-     (to-class-name (domaindsl.types:object-of-class c))
+     (symbol-to-pascal-case (domaindsl.types:object-of-class c))
      "()")))
 
 (defun render (ty)
