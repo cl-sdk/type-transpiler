@@ -9,7 +9,6 @@
    #:render-class
    #:render
    #:to-class-name
-   #:to-enum-tag
    #:to-ctor-variable-name))
 
 (in-package #:domaindsl.swift)
@@ -59,28 +58,28 @@
            (destructuring-bind (first . rest)
                args
              (reduce (lambda (acc x)
-                       (str:concat acc ", " (object-to-constructor-variable-name-string x)))
+                       (str:concat acc ", " (object-to-constructor-variable-name-string :swift x)))
                      rest
-                     :initial-value (object-to-constructor-variable-name-string first)))))
+                     :initial-value (object-to-constructor-variable-name-string :swift first)))))
     (if (null args)
         ""
         (str:concat "(" (render-args args) ")"))))
 
 (defun render-ctor (ct)
   (str:concat "  case "
-              (to-enum-tag (domaindsl.types:object-name ct))
+              (object-to-class-name-string :swift ct)
               (render-enum-case-args (domaindsl.types:object-arguments ct))))
 
 (defun render-type (ty ctors)
   (str:concat
       "enum "
-      (object-to-class-name-string :swift (domaindsl.types:object-name ty))
+      (object-to-class-name-string :swift ty)
       " {" ctors "}"))
 
 (defun render-class (ty)
   (str:concat
    "class "
-   (object-to-class-name-string :swift (domaindsl.types:object-name ty))
+   (object-to-class-name-string :swift ty)
    " {}"))
 
 (defun render (ty)

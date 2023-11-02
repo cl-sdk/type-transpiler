@@ -42,3 +42,40 @@
     (5am:is (equal
              ty
              (domaindsl.artifact:artifact-content art)))))
+
+(def-test render-a-type-without-constructors ()
+  (let* ((ty (domaindsl.types:make-data-type :name 'test
+                                             :ctors nil))
+         (art (first (domaindsl.artifact:generate-artifact :swift ty))))
+    (5am:is (string-equal "enum Test {
+}"
+                          (domaindsl.artifact:compile-artifact :swift art)))))
+
+(def-test render-a-type-with-single-constructor-and-no-arguments ()
+  (let* ((ctor (domaindsl.types:make-type-constructor :name 'test-ctor
+                                                      :args nil
+                                                      :of-class nil))
+         (ty (domaindsl.types:make-data-type :name 'test
+                                             :ctors (list ctor)))
+         (art (first (domaindsl.artifact:generate-artifact :swift ty))))
+    (5am:is (string-equal "enum Test {
+  case testCtor
+}"
+                          (domaindsl.artifact:compile-artifact :swift art)))))
+
+(def-test render-a-type-with-single-constructor-and-1-argument ()
+  (let* ((arg (domaindsl.types:make-constructor-argument :name 'arg
+                                                         :type 'class-for-argument
+                                                         :reference (find-class 'class-for-argument)
+                                                         :kind :class
+                                                         :array nil))
+         (ctor (domaindsl.types:make-type-constructor :name 'test-ctor
+                                                      :args (list arg)
+                                                      :of-class nil))
+         (ty (domaindsl.types:make-data-type :name 'test
+                                             :ctors (list ctor)))
+         (art (first (domaindsl.artifact:generate-artifact :swift ty))))
+    (5am:is (string-equal "enum Test {
+  case testCtor(ClassForArgument)
+}"
+                          (domaindsl.artifact:compile-artifact :swift art)))))
