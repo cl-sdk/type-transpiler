@@ -10,6 +10,16 @@ but, instead, use the common objects that gives approximately the same meaning
 NOTE: Still need a little bit of refactoring and a better design,
 but it's good enough for now.
 
+## The idea
+
+Using common lisp and its incredible development environment, we can get a lot of control over
+what we want to do, like filtering what should be rendered, if I want to render directly to file,
+of if I want to do some copy and paste.
+
+Maybe, one day, we can manipulate the AST of each language directly.
+
+![image](https://github.com/diasbruno/domaindsl/blob/development/extras/stateism.png?raw=true)
+
 ## Usage
 
 Declaring a data type:
