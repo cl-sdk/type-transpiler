@@ -1,4 +1,4 @@
-# domain dsl
+# WIP: domain dsl
 
 This project provides a DSL for writing your domain types
 and generate code for any target language (currently kotlin, swift, soon javascript).
@@ -53,4 +53,16 @@ open class MyType
 class ConstructorOfMyTypeA: MyType()
 
 data class ConstructorOfMyTypeB(val dependency: AnotherClass): MyType()
+```
+
+Javascript
+
+```javascript
+export function AnotherClass {}
+
+export function MyType() {}
+
+export function ConstructorOfMyTypeA() {}
+
+export function ConstructorOfMyTypeB(dependency) {}
 ```
