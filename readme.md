@@ -58,7 +58,9 @@ data class ConstructorOfMyTypeB(val dependency: AnotherClass): MyType()
 Javascript
 
 ```javascript
-export function AnotherClass {}
+export function AnotherClass() {
+  if (!(this instanceof AnotherClass)) { return new AnotherClass(); }
+}
 
 export function MyType() {}
 
