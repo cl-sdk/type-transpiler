@@ -62,4 +62,6 @@
     (destructuring-bind (base-class constructor)
         compiled
       (5am:is (string-equal "export function Test() {}" base-class))
-      (5am:is (string-equal "export function TestCtor(classForArgument) {}" constructor)))))
+      (5am:is (string-equal "export function TestCtor(classForArgument) {
+  this.classForArgument = classForArgument;
+}" constructor)))))

@@ -61,12 +61,37 @@
                         :initial-value (render-object target first)))
               ")"))))))
 
+(defun render-function-assignment (target ty)
+  (let ((name (object-to-constructor-variable-name-string target ty)))
+    (str:concat "  this." name " = " name ";")))
+
+(defun render-function-assignments (target ty)
+  (etypecase ty
+    (data-type "")
+    (t (let ((args (object-arguments ty)))
+         (if (null args)
+             ""
+             (destructuring-bind (first . rest)
+                 args
+               (reduce (lambda (acc x)
+                         (str:concat acc (string #\NEWLINE)
+                                     (render-function-assignment target x)))
+                       rest
+                       :initial-value (render-function-assignment target first))))))))
+
 (defun render-function (target ty)
-  (str:concat
-   "export function "
-   (domaindsl.types:object-to-class-name-string target ty)
-   (render-function-arguments target ty)
-   " {}"))
+  (let ((is-data-type (equal 'domaindsl.types:data-type (type-of ty))))
+   (str:concat
+    "export function "
+    (object-to-class-name-string target ty)
+    (render-function-arguments target ty)
+    " {"
+    (if is-data-type
+        ""
+        (str:concat (string #\NEWLINE)
+                    (render-function-assignments target ty)
+                    (string #\NEWLINE)))
+    "}")))
 
 (defun render-evaluated-function (target ty)
   (let ((name (domaindsl.types:object-to-class-name-string target ty)))
