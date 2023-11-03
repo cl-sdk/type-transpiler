@@ -85,7 +85,8 @@
    (object-to-class-name-string target ty)
    ")) { return new "
    (object-to-class-name-string target ty)
-   "(); }"))
+   (render-function-arguments target ty)
+   "; }"))
 
 (defun render-function (target ty)
   (let ((is-data-type (equal 'domaindsl.types:data-type (type-of ty))))
