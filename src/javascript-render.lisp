@@ -79,19 +79,32 @@
                        rest
                        :initial-value (render-function-assignment target first))))))))
 
+(defun render-constructor-helper (target ty)
+  (str:concat 
+   "  if (!(this instanceof "
+   (object-to-class-name-string target ty)
+   ")) { return new "
+   (object-to-class-name-string target ty)
+   "(); }"))
+
 (defun render-function (target ty)
   (let ((is-data-type (equal 'domaindsl.types:data-type (type-of ty))))
-   (str:concat
-    "export function "
-    (object-to-class-name-string target ty)
-    (render-function-arguments target ty)
-    " {"
-    (if is-data-type
-        ""
-        (str:concat (string #\NEWLINE)
-                    (render-function-assignments target ty)
-                    (string #\NEWLINE)))
-    "}")))
+    (str:concat
+     "export function "
+     (object-to-class-name-string target ty)
+     (render-function-arguments target ty)
+     " {"
+     (if is-data-type
+         ""
+         (str:concat (string #\NEWLINE)
+                     (render-constructor-helper target ty)
+                     (string #\NEWLINE)))
+     (if is-data-type
+         ""
+         (str:concat (string #\NEWLINE)
+                     (render-function-assignments target ty)
+                     (string #\NEWLINE)))
+     "}")))
 
 (defun render-evaluated-function (target ty)
   (let ((name (domaindsl.types:object-to-class-name-string target ty)))

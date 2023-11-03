@@ -63,6 +63,8 @@
         compiled
       (5am:is (string-equal "export function Test() {}" base-class))
       (5am:is (string-equal "export function TestCtor(classForArgument) {
+  if (!(this instanceof TestCtor)) { return new TestCtor(); }
+
   this.classForArgument = classForArgument;
 }" constructor)))))
 
@@ -85,5 +87,7 @@
         compiled
       (5am:is (string-equal "export function Test() {}" base-class))
       (5am:is (string-equal "export function TestCtor(arg) {
+  if (!(this instanceof TestCtor)) { return new TestCtor(); }
+
   this.arg = arg;
 }" constructor)))))
