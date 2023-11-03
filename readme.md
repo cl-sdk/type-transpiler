@@ -64,5 +64,7 @@ export function MyType() {}
 
 export function ConstructorOfMyTypeA() {}
 
-export function ConstructorOfMyTypeB(dependency) {}
+export function ConstructorOfMyTypeB(dependency) {
+  this.dependency = dependency;
+}
 ```
