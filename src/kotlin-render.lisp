@@ -1,10 +1,27 @@
 (defpackage #:domaindsl.kotlin
   (:use #:cl)
   (:import-from #:domaindsl.types
+                #:object-argument-is-array
+                #:object-argument-type
+                #:object-to-constructor-name-string
+                #:constructor-argument
+                #:object-arguments
+                #:object-of-class
+                #:object-constructors
+                #:object-name
+                #:type-constructor
+                #:class-reference
+                #:data-type
                 #:object-to-class-name-string
                 #:object-to-constructor-variable-name-string)
-  (:export
-   #:kotlin-render))
+  (:import-from #:domaindsl.render
+                #:render-object)
+  (:import-from #:domaindsl.artifact
+                #:artifact-content
+                #:make-artifact
+                #:compile-artifact
+                #:generate-artifact
+                #:artifact-extension))
 
 (in-package #:domaindsl.kotlin)
 
@@ -29,123 +46,82 @@
 (defun symbol-to-pascal-case (s)
   (str:pascal-case (symbol-name s)))
 
-(defmethod domaindsl.types:object-to-class-name-string
-    ((target (eql :kotlin))
-     (obj domaindsl.types:data-type))
-  (symbol-to-pascal-case (domaindsl.types:object-name obj)))
+(defmethod object-to-class-name-string ((target (eql :kotlin)) (obj data-type))
+  (symbol-to-pascal-case (object-name obj)))
 
-(defmethod domaindsl.types:object-to-class-name-string
-    ((target (eql :kotlin))
-     (obj domaindsl.types:type-constructor))
-  (symbol-to-pascal-case (domaindsl.types:object-name obj)))
+(defmethod object-to-class-name-string ((target (eql :kotlin)) (obj type-constructor))
+  (symbol-to-pascal-case (object-name obj)))
 
-(defmethod domaindsl.types:object-to-class-name-string
-    ((target (eql :kotlin))
-     (obj domaindsl.types:constructor-argument))
-  (let* ((type-symbol (domaindsl.types:object-argument-type obj))
+(defmethod object-to-class-name-string ((target (eql :kotlin)) (obj constructor-argument))
+  (let* ((type-symbol (object-argument-type obj))
          (name (symbol-to-pascal-case type-symbol))
-         (is-array (domaindsl.types:object-argument-is-array obj)))
+         (is-array (object-argument-is-array obj)))
     (if is-array (str:concat "Array<" name ">") name)))
 
-(defmethod domaindsl.types:object-to-constructor-name-string
-    ((target (eql :kotlin))
-     (obj domaindsl.types:constructor-argument))
-  (str:camel-case (symbol-name (domaindsl.types:object-argument-type obj))))
+(defmethod object-to-constructor-name-string ((target (eql :kotlin)) (obj constructor-argument))
+  (str:camel-case (symbol-name (object-argument-type obj))))
 
-(defmethod domaindsl.types:object-to-constructor-variable-name-string
-    ((target (eql :kotlin))
-     (obj domaindsl.types:constructor-argument))
-  (str:camel-case (symbol-name (domaindsl.types:object-argument-type obj))))
+(defmethod object-to-constructor-variable-name-string ((target (eql :kotlin)) (obj constructor-argument))
+  (str:camel-case (symbol-name (object-argument-type obj))))
 
-(defun render-constructor-argument (arg)
+(defmethod render-object ((target (eql :kotlin)) (o constructor-argument))
   (str:concat "val "
-              (object-to-constructor-variable-name-string :kotlin arg)
+              (object-to-constructor-variable-name-string target o)
               ": "
-              (object-to-class-name-string :kotlin arg)))
+              (object-to-class-name-string target o)))
 
-(defun render-constructor-arguments (ct)
-  (let ((constructor-arguments (domaindsl.types:object-arguments ct)))
-    (if (null constructor-arguments)
-        ""
-        (str:concat
-         "("
-         (destructuring-bind (first . rest)
-             constructor-arguments
-           (reduce (lambda (acc x)
-                     (str:concat acc ", " (render-constructor-argument x)))
-                   rest
-                   :initial-value (render-constructor-argument first)))
-         ")"))))
+(defmethod render-object ((target (eql :kotlin)) (o type-constructor))
+  (let* ((args (object-arguments o))
+         (has-args (< 0 (length args)))
+         (class-tag (if has-args "data class " "class ")))
+    (str:concat
+     class-tag
+     (object-to-class-name-string target o)
+     (let ((constructor-arguments (domaindsl.types:object-arguments o)))
+       (if (null constructor-arguments)
+           ""
+           (str:concat
+            "("
+            (destructuring-bind (first . rest)
+                constructor-arguments
+              (reduce (lambda (acc x)
+                        (str:concat acc ", " (render-object target x)))
+                      rest
+                      :initial-value (render-object target first)))
+            ")")))
+     ": "
+     (symbol-to-pascal-case (object-of-class o))
+     "()")))
 
-(defun render-base-class (ty)
+(defmethod render-object ((target (eql :kotlin)) (o data-type))
   (str:concat
    "open class "
-   (object-to-class-name-string :kotlin ty)))
+   (object-to-class-name-string target ty)))
 
-(defun render-data-class (ty ct)
-  (let* ((args (domaindsl.types:object-arguments ct))
-         (has-args (< 0 (length args)))
-         (class-tag (if has-args "data class " "class ")))
-    (str:concat
-     class-tag
-     (object-to-class-name-string ty)
-     (render-constructor-arguments ct)
-     ": "
-     (object-to-class-name-string ty)
-     "()")))
-
-(defun render-type (ty)
-  (render-base-class ty))
-
-(defun render-class (ty)
+(defmethod render-object ((target (eql :kotlin)) (o class-reference))
   (str:concat "class "
-              (object-to-class-name-string :kotlin ty)
+              (object-to-class-name-string target ty)
               "{}"))
 
-(defun render-constructor (c)
-  (let* ((args (domaindsl.types:object-arguments c))
-         (has-args (< 0 (length args)))
-         (class-tag (if has-args "data class " "class ")))
-    (str:concat
-     class-tag
-     (object-to-class-name-string :kotlin c)
-     (render-constructor-arguments c)
-     ": "
-     (symbol-to-pascal-case (domaindsl.types:object-of-class c))
-     "()")))
-
-(defun render (ty)
-  (etypecase ty
-    (domaindsl.types:data-type (render-type ty))
-    (domaindsl.types:class-reference (render-class ty))
-    (domaindsl.types:type-constructor (render-constructor ty))))
-
-(defmethod domaindsl.artifact:artifact-extension ((target (eql :kotlin)))
+(defmethod artifact-extension ((target (eql :kotlin)))
   ".kt")
 
-(defmethod domaindsl.artifact:generate-artifact
-    ((target (eql :kotlin))
-     (o domaindsl.types:data-type))
+(defmethod generate-artifact ((target (eql :kotlin)) (o data-type))
   (flet ((artifact (name obj)
-           (domaindsl.artifact:make-artifact
+           (make-artifact
             :name name
             :file (str:concat
                    (object-to-class-name-string target obj)
-                   (domaindsl.artifact:artifact-extension target))
+                   (artifact-extension target))
             :content obj)))
-    (cons (artifact (domaindsl.types:object-name o) o)
-          (mapcar (lambda (c)
-                    (artifact (domaindsl.types:object-name c) c))
-                  (domaindsl.types:object-constructors o)))))
+    (cons (artifact (object-name o) o)
+          (mapcar (lambda (c) (artifact (object-name c) c)) (object-constructors o)))))
 
-(defmethod domaindsl.artifact:generate-artifact
-    ((target (eql :kotlin))
-     (o domaindsl.types:class-reference))
-  (list (domaindsl.artifact:make-artifact
-         :name (domaindsl.types:object-name o)
+(defmethod generate-artifact ((target (eql :kotlin)) (o class-reference))
+  (list (make-artifact
+         :name (object-name o)
          :file (to-file-name (object-to-class-name-string target o))
          :content o)))
 
-(defmethod domaindsl.artifact:compile-artifact
-    ((target (eql :kotlin)) o)
-  (render (domaindsl.artifact:artifact-content o)))
+(defmethod compile-artifact ((target (eql :kotlin)) o)
+  (render-object target (artifact-content o)))

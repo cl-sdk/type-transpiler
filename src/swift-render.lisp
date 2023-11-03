@@ -1,8 +1,25 @@
 (defpackage #:domaindsl.swift
   (:use #:cl)
   (:import-from #:domaindsl.types
+                #:class-reference
+                #:object-argument-is-array
+                #:object-argument-type
+                #:object-name
+                #:data-type
+                #:object-to-constructor-name-string
+                #:object-arguments
+                #:constructor-argument
+                #:type-constructor
+                #:object-constructors
                 #:object-to-class-name-string
                 #:object-to-constructor-variable-name-string)
+  (:import-from #:domaindsl.render
+                #:render-object)
+  (:import-from #:domaindsl.artifact
+                #:artifact-content
+                #:compile-artifact
+                #:generate-artifact
+                #:artifact-extension)
   (:export
    #:swift-render
    #:render-type
@@ -25,91 +42,72 @@
 ;;   case ConstructorName(ConstructorArgument,...)
 ;; }
 
-(defmethod domaindsl.types:object-to-class-name-string
-    ((target (eql :swift))
-     (obj domaindsl.types:data-type))
-  (str:pascal-case (symbol-name (domaindsl.types:object-name obj))))
-
-(defmethod domaindsl.types:object-to-class-name-string
-    ((target (eql :swift))
-     (obj domaindsl.types:type-constructor))
-  (str:camel-case (symbol-name (domaindsl.types:object-name obj))))
-
-(defmethod domaindsl.types:object-to-class-name-string
-    ((target (eql :swift))
-     (obj domaindsl.types:constructor-argument))
-  (let* ((type-symbol (domaindsl.types:object-argument-type obj))
-         (name (str:pascal-case (symbol-name type-symbol)))
-         (is-array (domaindsl.types:object-argument-is-array obj)))
-    (if is-array (str:concat "[" name "]") name)))
-
-(defmethod domaindsl.types:object-to-constructor-name-string
-    ((target (eql :swift))
-     (obj domaindsl.types:constructor-argument))
-  (str:camel-case (symbol-name (domaindsl.types:object-argument-type obj))))
-
-(defmethod domaindsl.types:object-to-constructor-variable-name-string
-    ((target (eql :swift))
-     (obj domaindsl.types:constructor-argument))
-  (domaindsl.types:object-to-class-name-string target obj))
-
-(defun render-enum-case-args (args)
-  (flet ((render-args (args)
-           (destructuring-bind (first . rest)
-               args
-             (reduce (lambda (acc x)
-                       (str:concat acc ", " (object-to-constructor-variable-name-string :swift x)))
-                     rest
-                     :initial-value (object-to-constructor-variable-name-string :swift first)))))
-    (if (null args)
-        ""
-        (str:concat "(" (render-args args) ")"))))
-
-(defun render-ctor (ct)
-  (str:concat "  case "
-              (object-to-class-name-string :swift ct)
-              (render-enum-case-args (domaindsl.types:object-arguments ct))))
-
-(defun render-type (ty ctors)
-  (str:concat
-      "enum "
-      (object-to-class-name-string :swift ty)
-      " {" ctors "}"))
-
-(defun render-class (ty)
-  (str:concat
-   "class "
-   (object-to-class-name-string :swift ty)
-   " {}"))
-
-(defun render (ty)
-  (etypecase ty
-    (domaindsl.types:data-type (render-type
-                                ty
-                                (reduce (lambda (acc ct)
-                                          (str:concat acc (render-ctor ct) (string #\NEWLINE)))
-                                        (domaindsl.types:object-constructors ty)
-                                        :initial-value (string #\NEWLINE))))
-    (domaindsl.types:class-reference (render-class ty))))
-
 (defun file-for-artifact (name o)
   (domaindsl.artifact:make-artifact :name name
                                    :file name
                                    :content o))
 
-(defmethod domaindsl.artifact:artifact-extension ((target (eql :swift)))
+(defmethod object-to-class-name-string ((target (eql :swift)) (obj data-type))
+  (str:pascal-case (symbol-name (object-name obj))))
+
+(defmethod object-to-class-name-string ((target (eql :swift)) (obj type-constructor))
+  (str:camel-case (symbol-name (object-name obj))))
+
+(defmethod object-to-class-name-string ((target (eql :swift)) (obj constructor-argument))
+  (let* ((type-symbol (object-argument-type obj))
+         (name (str:pascal-case (symbol-name type-symbol)))
+         (is-array (object-argument-is-array obj)))
+    (if is-array (str:concat "[" name "]") name)))
+
+(defmethod object-to-constructor-name-string ((target (eql :swift)) (obj constructor-argument))
+  (str:camel-case (symbol-name (object-argument-type obj))))
+
+(defmethod object-to-constructor-variable-name-string ((target (eql :swift)) (obj constructor-argument))
+  (object-to-class-name-string target obj))
+
+(defmethod render-object ((target (eql :swift)) (o constructor-argument))
+  (object-to-constructor-variable-name-string :swift x))
+
+(defmethod render-object ((target (eql :swift)) (o type-constructor))
+  (str:concat "  case "
+              (object-to-class-name-string target o)
+              (if (null args)
+                  ""
+                  (str:concat "("
+                              (destructuring-bind (first . rest)
+                                  args
+                                (reduce (lambda (acc x)
+                                          (str:concat acc ", " (render-object target x)))
+                                        rest
+                                        :initial-value (render-object target x)))
+                              ")"))
+
+              " {}"))
+
+(defmethod render-object ((target (eql :swift)) (o data-type))
+  (str:concat
+   "enum "
+   (object-to-class-name-string :swift o)
+   " {"
+   (reduce (lambda (acc ct)
+             (str:concat acc (render-object target ct) (string #\NEWLINE)))
+           (object-constructors o)
+           :initial-value (string #\NEWLINE))
+   "}"))
+
+(defmethod render-object ((target (eql :swift)) (o class-reference))
+  (str:concat "class " (object-to-class-name-string target o) " {}"))
+
+(defmethod artifact-extension ((target (eql :swift)))
   ".swift")
 
-(defmethod domaindsl.artifact:generate-artifact
-    ((target (eql :swift)) (o domaindsl.types:data-type))
+(defmethod generate-artifact ((target (eql :swift)) (o data-type))
   (let ((class-name (object-to-class-name-string target o)))
     (list (file-for-artifact class-name o))))
 
-(defmethod domaindsl.artifact:generate-artifact
-    ((target (eql :swift)) (o domaindsl.types:class-reference))
+(defmethod generate-artifact ((target (eql :swift)) (o class-reference))
   (let ((class-name (object-to-class-name-string target o)))
     (list (file-for-artifact class-name o))))
 
-(defmethod domaindsl.artifact:compile-artifact
-    ((target (eql :swift)) o)
-  (render (domaindsl.artifact:artifact-content o)))
+(defmethod compile-artifact ((target (eql :swift)) o)
+  (render-object target (artifact-content o)))
