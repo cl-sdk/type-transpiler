@@ -65,6 +65,8 @@ export function MyType() {}
 export function ConstructorOfMyTypeA() {}
 
 export function ConstructorOfMyTypeB(dependency) {
+  if (!(this instanceof ConstructorOfMyTypeB)) { return new ConstructorOfMyTypeB(dependency); }
+
   this.dependency = dependency;
 }
 ```
