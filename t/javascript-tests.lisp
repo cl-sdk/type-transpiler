@@ -65,3 +65,25 @@
       (5am:is (string-equal "export function TestCtor(classForArgument) {
   this.classForArgument = classForArgument;
 }" constructor)))))
+
+(def-test render-a-type-with-single-constructor-and-1-named-argument ()
+  (let* ((arg (domaindsl.types:make-constructor-argument :name 'arg
+                                                         :type 'class-for-argument
+                                                         :reference (find-class 'class-for-argument)
+                                                         :kind :class
+                                                         :array nil))
+         (ctor (domaindsl.types:make-type-constructor :name 'test-ctor
+                                                      :args (list arg)
+                                                      :of-class 'test))
+         (ty (domaindsl.types:make-data-type :name 'test
+                                             :ctors (list ctor)))
+         (arts (domaindsl.artifact:generate-artifact :javascript ty))
+         (compiled (mapcar (lambda (art)
+                             (domaindsl.artifact:compile-artifact :javascript art))
+                           arts)))
+    (destructuring-bind (base-class constructor)
+        compiled
+      (5am:is (string-equal "export function Test() {}" base-class))
+      (5am:is (string-equal "export function TestCtor(arg) {
+  this.arg = arg;
+}" constructor)))))
