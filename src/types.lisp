@@ -28,7 +28,8 @@
    #:make-class-reference
    #:make-type-constructor
    #:make-constructor-argument
-   #:object-argument-kind))
+   #:object-argument-kind
+   #:register-class))
 
 (in-package #:domaindsl.types)
 
@@ -105,6 +106,11 @@
     (add-to-table name (make-data-type :name name :ctors ctors)))
   nil)
 
+(defun register-class (type-name)
+  (add-to-table type-name
+                (make-class-reference :name type-name :reference (find-reference :class type-name))
+                nil))
+
 (defgeneric object-name (o))
 
 (defmethod object-name ((o class-reference))
@@ -132,6 +138,10 @@
 
 (defmethod object-arguments ((o type-constructor))
   (type-constructor-args o))
+
+(defmethod object-arguments ((o class-reference))
+  (let ((k  (class-reference-reference o)))
+    (mapcar #'slot-definition-name (sb-mop:class-direct-slots k))))
 
 (defgeneric object-of-class (o))
 

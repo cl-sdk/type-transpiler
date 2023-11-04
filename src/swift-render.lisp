@@ -59,6 +59,9 @@
          (is-array (object-argument-is-array obj)))
     (if is-array (str:concat "[" name "]") name)))
 
+(defmethod object-to-class-name-string ((target (eql :swift)) (obj class-reference))
+  (str:pascal-case (symbol-name (object-name obj))))
+
 (defmethod object-to-constructor-name-string ((target (eql :swift)) (obj constructor-argument))
   (str:camel-case (symbol-name (object-argument-type obj))))
 

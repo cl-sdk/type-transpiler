@@ -39,6 +39,9 @@
          (is-array (object-argument-is-array obj)))
     (if is-array (str:concat name) name)))
 
+(defmethod object-to-class-name-string ((target (eql :javascript)) (obj class-reference))
+  (symbol-to-pascal-case (object-name obj)))
+
 (defmethod object-to-constructor-name-string ((target (eql :javascript)) (obj constructor-argument))
   (str:camel-case (symbol-name (object-name obj))))
 
