@@ -96,11 +96,11 @@
 (defmethod render-object ((target (eql :kotlin)) (o data-type))
   (str:concat
    "open class "
-   (object-to-class-name-string target ty)))
+   (object-to-class-name-string target o)))
 
 (defmethod render-object ((target (eql :kotlin)) (o class-reference))
   (str:concat "class "
-              (object-to-class-name-string target ty)
+              (object-to-class-name-string target o)
               "{}"))
 
 (defmethod artifact-extension ((target (eql :kotlin)))
