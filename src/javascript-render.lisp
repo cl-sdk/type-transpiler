@@ -53,7 +53,7 @@
     (data-type "()")
     (t (let ((args (object-arguments ty)))
          (if (null args)
-             ""
+             "()"
              (str:concat
               "("
               (destructuring-bind (first . rest)
