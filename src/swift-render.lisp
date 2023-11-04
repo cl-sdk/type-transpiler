@@ -71,18 +71,17 @@
 (defmethod render-object ((target (eql :swift)) (o type-constructor))
   (str:concat "  case "
               (object-to-class-name-string target o)
-              (if (null args)
-                  ""
-                  (str:concat "("
-                              (destructuring-bind (first . rest)
-                                  args
-                                (reduce (lambda (acc x)
-                                          (str:concat acc ", " (render-object target x)))
-                                        rest
-                                        :initial-value (render-object target x)))
-                              ")"))
-
-              " {}"))
+              (let ((args (object-arguments o)))
+                (if (null args)
+                    ""
+                    (str:concat "("
+                                (destructuring-bind (first . rest)
+                                    args
+                                  (reduce (lambda (acc x)
+                                            (str:concat acc ", " (render-object target x)))
+                                          rest
+                                          :initial-value (render-object target x)))
+                                ")")))))
 
 (defmethod render-object ((target (eql :swift)) (o data-type))
   (str:concat
