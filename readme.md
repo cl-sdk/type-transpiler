@@ -32,6 +32,49 @@ Declaring a data type:
    (constructor-of-my-type-b (:class another-class (:name dependency)))))
 ```
 
+Generated artifacts:
+
+```lisp
+((((ARTIFACT :KOTLIN DOOR-STATE "open class DoorState")
+   (ARTIFACT :KOTLIN DOOR-STATE "class OpenedDoor: DoorState()")
+   (ARTIFACT :KOTLIN DOOR-STATE "class ClosedDoor: DoorState()"))
+  ((ARTIFACT :KOTLIN DOOR-EVENT "open class DoorEvent")
+   (ARTIFACT :KOTLIN DOOR-EVENT "class OpenDoorEvent: DoorEvent()")
+   (ARTIFACT :KOTLIN DOOR-EVENT "class CloseDoorEvent: DoorEvent()"))
+  ((ARTIFACT :KOTLIN CLOSED-DOOR "class ClosedDoor{}"))
+  ((ARTIFACT :KOTLIN OPENED-DOOR "class OpenedDoor{}")))
+ (((ARTIFACT :JAVASCRIPT DOOR-STATE "export function DoorState() {}")
+   (ARTIFACT :JAVASCRIPT DOOR-STATE
+    "export const OpenedDoor = new (function OpenedDoor() {})")
+   (ARTIFACT :JAVASCRIPT DOOR-STATE
+    "export const ClosedDoor = new (function ClosedDoor() {})"))
+  ((ARTIFACT :JAVASCRIPT DOOR-EVENT "export function DoorEvent() {}")
+   (ARTIFACT :JAVASCRIPT DOOR-EVENT
+    "export const OpenDoorEvent = new (function OpenDoorEvent() {})")
+   (ARTIFACT :JAVASCRIPT DOOR-EVENT
+    "export const CloseDoorEvent = new (function CloseDoorEvent() {})"))
+  ((ARTIFACT :JAVASCRIPT CLOSED-DOOR "export function ClosedDoor {
+  if (!(this instanceof ClosedDoor)) { return new ClosedDoor; }
+
+
+}"))
+  ((ARTIFACT :JAVASCRIPT OPENED-DOOR "export function OpenedDoor {
+  if (!(this instanceof OpenedDoor)) { return new OpenedDoor; }
+
+
+}")))
+ (((ARTIFACT :SWIFT DOOR-STATE "enum DoorState {
+  case openedDoor
+  case closedDoor
+}"))
+  ((ARTIFACT :SWIFT DOOR-EVENT "enum DoorEvent {
+  case openDoorEvent
+  case closeDoorEvent
+}"))
+  ((ARTIFACT :SWIFT CLOSED-DOOR "class ClosedDoor {}"))
+  ((ARTIFACT :SWIFT OPENED-DOOR "class OpenedDoor {}"))))
+```
+
 This example will generate the approximate in swift:
 
 ```swift
