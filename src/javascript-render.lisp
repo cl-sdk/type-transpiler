@@ -149,7 +149,7 @@
 (defmethod generate-artifact ((target (eql :javascript)) (o class-reference))
   (list (make-artifact
          :name (object-name o)
-         :file (to-file-name (object-to-class-name-string target o))
+         :file (object-to-class-name-string target o)
          :content o)))
 
 (defmethod compile-artifact ((target (eql :javascript)) o)
