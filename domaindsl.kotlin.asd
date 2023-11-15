@@ -3,4 +3,4 @@
                #:domaindsl.types
                #:domaindsl.artifact
                #:domaindsl.render)
-  :components ((:file "src/kotlin-render")))
+  :components ((:file "languages/kotlin")))

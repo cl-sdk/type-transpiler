@@ -3,4 +3,4 @@
                #:domaindsl.types
                #:domaindsl.render
                #:domaindsl.artifact)
-  :components ((:file "src/javascript-render")))
+  :components ((:file "languages/javascript")))

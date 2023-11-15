@@ -3,4 +3,4 @@
                #:domaindsl.types
                #:domaindsl.render
                #:domaindsl.artifact)
-  :components ((:file "src/swift-render")))
+  :components ((:file "languages/swift")))
